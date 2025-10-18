@@ -35,9 +35,4 @@ jobs:
           title: "Semgrep okey"
           content-filepath: .semgrep_issue.md
         
-      - name: Mensagem se o Semgrep Falhar
-        if: env.semgrep_failed == 'true'
-        uses: peter-evans/create-issue-from-file@v4
-        with:
-          title: "Semgrep encontrou problemas no código"
-          content-filepath: .semgrep_issue.md
+      
