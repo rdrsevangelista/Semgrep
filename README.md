@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # crAPI
 
 **c**ompletely **r**idiculous **API** (crAPI) will help you to understand the
@@ -160,3 +161,28 @@ To know more about challenges in crAPI. Visit [challenges]
 If you need any help with installing and running crAPI you can check out this guide: [Troubleshooting guide crAPI](https://github.com/OWASP/crAPI/blob/main/docs/troubleshooting.md). If this doesn't solve your problem, please create an issue in Github Issues.
 
 
+=======
+# Versão do NodeJS
+
+- Nesse projeto estamos usando a versão **16.0.0** do NodeJS.
+
+# Iniciando o projeto
+
+Depois de baixar o código para a sua máquina, execute o comando:
+
+```
+npm install
+```
+
+Esse comando irá instalar todas as dependencias do projeto na sua máquina.
+
+## Executando o projeto
+
+Depois de instalar todas as dependências execute o comando:
+
+```
+npm start
+```
+
+Assim o seu projeto será compilado e o servidor será esecutado na url `localhost:3000`
+>>>>>>> 989f9860cc2b9f3f4d8eea51f89191fee9e3596f
