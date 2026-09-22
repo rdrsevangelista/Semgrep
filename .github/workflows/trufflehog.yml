@@ -1,27 +1,26 @@
 name: trufflehog scan
 
+# Altera o gatilho para rodar a cada commit (push) em qualquer branch
 on:
-  pull_request:
-      branches:
-        - main
+  push:
+    branches:
+      - '**' # Roda em todas as branches. Se quiser apenas na main, mude para: - main
 
 jobs:
   trufflehog:
     runs-on: ubuntu-latest
 
     steps:
-    -  name: Checkout do Código
-       uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    # 1. Garante o checkout completo do histórico para analisar os commits corretamente
+    - name: Checkout do Código
+      uses: actions/checkout@v4
       with:
-        python-version: '3.10'
+        fetch-depth: 0
 
-    - name: Install Trufflehog
-      run: python -m  pip install trufflehog
-
-    - name: Run Trufflehog
-      run: trufflehog https://github.com/IBMEvangelista/Semgrep
-
-    
+    # 2. Usa a Action oficial do TruffleHog (mais segura e rápida que instalar via pip)
+    - name: TruffleHog OSS Scan
+      uses: trufflesecurity/trufflehog@main
+      with:
+        base: ${{ github.event.before }}
+        head: HEAD
+        extra_args: --debug --only-verified
