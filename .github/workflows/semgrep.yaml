@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
   security-events: write
+  issues: write
 
 jobs:
   semgrep:
@@ -30,23 +31,57 @@ jobs:
           python -m pip install semgrep
 
       - name: Run Semgrep scan
+        shell: bash
         run: |
+          touch semgrep-results.sarif
+          touch semgrep-results.json
+          touch semgrep-results.txt
+
+          set +e
+
           semgrep scan \
             --config=auto \
             . \
             --sarif-output=semgrep-results.sarif \
-            --json-output=semgrep-results.json
-        continue-on-error: true
+            --json-output=semgrep-results.json \
+            --text-output=semgrep-results.txt
 
-      - name: Upload SARIF results to GitHub
+          exit_code=$?
+
+          echo "SEMGREP_EXIT_CODE=$exit_code" >> "$GITHUB_ENV"
+
+          {
+            echo "# Resultado do Semgrep"
+            echo
+            echo "Commit analisado: \`${GITHUB_SHA}\`"
+            echo
+            echo '```text'
+            cat semgrep-results.txt
+            echo '```'
+          } > semgrep-issue.md
+
+          exit 0
+
+      - name: Upload SARIF to GitHub
         if: always()
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: semgrep-results.sarif
 
-      - name: Upload JSON results as artifact
+      - name: Upload Semgrep reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: semgrep-results
-          path: semgrep-results.json
+          name: semgrep-reports
+          path: |
+            semgrep-results.sarif
+            semgrep-results.json
+            semgrep-results.txt
+
+      - name: Create issue with Semgrep results
+        if: env.SEMGREP_EXIT_CODE != '0'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: "Alertas encontrados pelo Semgrep"
+          content-filepath: semgrep-issue.md
+          labels: security,semgrep
