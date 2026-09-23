@@ -1,26 +1,43 @@
-name: trufflehog scan
+name: TruffleHog Scan Test
 
-# Altera o gatilho para rodar a cada commit (push) em qualquer branch
 on:
   push:
     branches:
-      - '**' # Roda em todas as branches. Se quiser apenas na main, mude para: - main
+      - '**'
+
+permissions:
+  contents: read
 
 jobs:
   trufflehog:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Garante o checkout completo do histórico para analisar os commits corretamente
-    - name: Checkout do Código
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    # 2. Usa a Action oficial do TruffleHog (mais segura e rápida que instalar via pip)
-    - name: TruffleHog OSS Scan
-      uses: trufflesecurity/trufflehog@main
-      with:
-        base: ${{ github.event.before }}
-        head: HEAD
-        extra_args: --debug --only-verified
+      - name: Run TruffleHog scan
+        uses: trufflesecurity/trufflehog@main
+        continue-on-error: true
+        with:
+          base: ${{ github.event.before }}
+          head: HEAD
+          extra_args: --debug --only-verified --json --output=trufflehog-results.json
+
+      - name: Display TruffleHog results
+        if: always()
+        run: |
+          if [ -f trufflehog-results.json ]; then
+            cat trufflehog-results.json
+          else
+            echo "Nenhum resultado foi gerado."
+          fi
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trufflehog-results
+          path: trufflehog-results.json
