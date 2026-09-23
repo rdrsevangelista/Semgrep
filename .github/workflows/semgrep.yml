@@ -9,7 +9,6 @@ on:
 permissions:
   contents: read
   security-events: write
-  issues: write
 
 jobs:
   semgrep:
@@ -44,23 +43,9 @@ jobs:
             --text-output=semgrep-results.txt
 
           semgrep_exit_code=$?
-          echo "SEMGREP_EXIT_CODE=$semgrep_exit_code" >> "$GITHUB_ENV"
-
-          {
-            echo "O Semgrep identificou vulnerabilidades ou padroes suspeitos no código"
-            echo
-            echo "Por favor, revise o código e corrija os pontos listados."
-            echo
-            echo "Este alerta foi gerado automaticamente."
-            echo
-            echo "## Log do Semgrep"
-            echo
-            echo '```text'
-            cat semgrep-results.txt
-            echo '```'
-          } > semgrep-issue.md
-
           cat semgrep-results.txt
+
+          echo "Código de saída do Semgrep: $semgrep_exit_code"
           exit 0
 
       - name: Upload SARIF to GitHub
@@ -78,10 +63,3 @@ jobs:
             semgrep-results.sarif
             semgrep-results.json
             semgrep-results.txt
-
-      - name: Create issue with Semgrep log
-        if: env.SEMGREP_EXIT_CODE != '0'
-        uses: peter-evans/create-issue-from-file@v5
-        with:
-          title: "Alertas encontrados pelo Semgrep"
-          content-filepath: semgrep-issue.md
